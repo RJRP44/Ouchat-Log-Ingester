@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"regexp"
 	"strconv"
 )
@@ -22,12 +21,9 @@ var levelMap = map[byte]int{
 func parseLogLine(line string) (level int, mcuMs int, message string) {
 	matches := espLogRegex.FindStringSubmatch(line)
 	if matches == nil {
-		log.Printf("heuuu %s")
 		//Return a default value for the line if it not correct
 		return 0, 0, line
 	}
-
-	log.Printf("%s is splited into : %s # %s # %s\n", line, matches[1], matches[2], matches[3])
 
 	level = levelMap[matches[1][0]]
 

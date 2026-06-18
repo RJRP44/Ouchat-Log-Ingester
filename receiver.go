@@ -50,7 +50,6 @@ func handleConnection(conn net.Conn, db *Database) {
 			}
 			return
 		}
-		log.Printf("packet %s", env)
 		if err := dispatch(&env, state, db); err != nil {
 			log.Printf("error handling %q message from %s: %v", env.Type, remote, err)
 		}
