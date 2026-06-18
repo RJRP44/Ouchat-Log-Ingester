@@ -22,14 +22,22 @@ CREATE TABLE raw_data
     FOREIGN KEY (cat, timestamp) REFERENCES sessions(cat, timestamp)
 );
 
+CREATE TABLE calibration_data
+(
+    cat VARCHAR(5),
+    timestamp TIMESTAMP,
+    data TEXT,
+    PRIMARY KEY (cat, timestamp),
+    FOREIGN KEY (cat, timestamp) REFERENCES sessions(cat, timestamp)
+);
+
 CREATE TABLE logs
 (
+    id SERIAL PRIMARY KEY,
     cat VARCHAR(5),
     timestamp TIMESTAMP,
     mcu_ms INTEGER CHECK ( mcu_ms > 0 ),
     level INTEGER,
     log TEXT,
-    PRIMARY KEY (cat, timestamp, mcu_ms),
     FOREIGN KEY (cat, timestamp) REFERENCES sessions(cat, timestamp)
 );
-
