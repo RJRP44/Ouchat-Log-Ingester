@@ -1,5 +1,6 @@
 name: Docker build
-on:
+
+on: [push]
 
 jobs:
   docker:
