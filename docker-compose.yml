@@ -1,0 +1,32 @@
+services:
+  ouchat-log-ingester:
+    depends_on:
+      - postgres
+    build:
+      context: .
+    container_name: ouchat-log-ingester
+    hostname: ouchat-log-ingester
+    read_only: true
+    env_file:
+      - .env
+    ports:
+      - "80:8080"
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    hostname: postgres
+    restart: unless-stopped
+    volumes:
+      - db:/var/lib/postgresql/data:rw
+      - ./db.sql:/docker-entrypoint-initdb.d/create_database.sql:ro,z
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+
+volumes:
+  db:
