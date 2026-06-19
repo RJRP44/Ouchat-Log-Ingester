@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -42,6 +43,15 @@ func main() {
 	log.Println("connected to database")
 
 	db := NewDatabase(dbConnection)
+
+	//Start the http server for videos
+	http.HandleFunc("/upload", uploadHandler(db))
+	go func() {
+		err := http.ListenAndServe(":8080", nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	//Start the tcp server
 	listener, err := net.Listen("tcp", ":3010")

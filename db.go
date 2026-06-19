@@ -25,7 +25,7 @@ func (r *Database) CreateCat(cat string) error {
 // CreateSession inserts a new session (cat, timestamp) if it doesn't already exist.
 func (r *Database) CreateSession(cat string, ts time.Time) error {
 	_, err := r.db.Exec(
-		`INSERT INTO sessions (cat, timestamp) VALUES ($1, $2) ON CONFLICT (cat, timestamp) DO NOTHING`,
+		`INSERT INTO sessions (cat, timestamp, video) VALUES ($1, $2, false) ON CONFLICT (cat, timestamp) DO NOTHING`,
 		cat, ts,
 	)
 	return err
@@ -58,6 +58,14 @@ func (r *Database) InsertRaw(cat string, ts time.Time, mcuMs int, data string) e
 	_, err := r.db.Exec(
 		`INSERT INTO raw_data (cat, timestamp, mcu_ms, data) VALUES ($1, $2, $3, $4)`,
 		cat, ts, mcuMs, data,
+	)
+	return err
+}
+
+func (r *Database) InsertVideo(cat string, ts time.Time) error {
+	_, err := r.db.Exec(
+		`UPDATE sessions SET video = true WHERE cat = $1 AND timestamp = $2`,
+		cat, ts,
 	)
 	return err
 }

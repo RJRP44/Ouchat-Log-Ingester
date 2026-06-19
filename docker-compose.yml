@@ -6,11 +6,14 @@ services:
       context: .
     container_name: ouchat-log-ingester
     hostname: ouchat-log-ingester
-    read_only: true
     env_file:
       - .env
     ports:
       - "3010:3010"
+      - "8080:8080"
+    user: "1000:1000"
+    volumes:
+      - ./data/uploads:/uploads:rw,z
     deploy:
       restart_policy:
         condition: on-failure

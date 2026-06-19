@@ -9,6 +9,7 @@ CREATE TABLE sessions
 (
     cat       VARCHAR(5) REFERENCES cats,
     timestamp TIMESTAMP,
+    video BOOLEAN,
     PRIMARY KEY (cat, timestamp)
 );
 

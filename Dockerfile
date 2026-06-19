@@ -18,8 +18,6 @@ WORKDIR /
 
 COPY --from=build /ouchat-log-ingester /ouchat-log-ingester
 
-EXPOSE 3010
-
-USER nonroot:nonroot
+EXPOSE 3010 8080
 
 ENTRYPOINT ["/ouchat-log-ingester"]

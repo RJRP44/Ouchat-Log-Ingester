@@ -12,6 +12,7 @@ import (
 
 // timestampLayout matches the timestamp format used by postgres
 const timestampLayout = "2006-01-02 15:04:05"
+const electronicsTimestampLayout = "2006-01-02_15-04-05"
 
 // connState holds the session context currently active on a connection.
 // A connection is expected to send exactly one "init" message before any
@@ -81,7 +82,7 @@ func handleInit(env *Packet, state *connState, db *Database) error {
 		content.Timestamp = currentTime.Format(timestampLayout)
 	}
 
-	ts, err := time.Parse(timestampLayout, content.Timestamp)
+	ts, err := time.Parse(electronicsTimestampLayout, content.Timestamp)
 	if err != nil {
 		return fmt.Errorf("invalid timestamp %q: %w", content.Timestamp, err)
 	}
