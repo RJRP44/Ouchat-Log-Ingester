@@ -11,8 +11,15 @@ COPY *.go ./
 
 RUN go build -o /ouchat-log-ingester
 
-# Deploy
-FROM gcr.io/distroless/base-debian13
+FROM debian:13-slim
+
+WORKDIR /
+
+# Installation propre de FFmpeg certifié pour l'architecture de ton Pi
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /
 

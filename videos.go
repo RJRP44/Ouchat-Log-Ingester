@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -43,7 +45,7 @@ func uploadHandler(db *Database) http.HandlerFunc {
 		}(file)
 
 		ext := strings.ToLower(filepath.Ext(header.Filename))
-		if ext != ".mp4" {
+		if ext != ".h264" {
 			http.Error(w, "Unsupported file extension: "+ext, http.StatusUnsupportedMediaType)
 			return
 		}
@@ -87,8 +89,34 @@ func uploadHandler(db *Database) http.HandlerFunc {
 			return
 		}
 
+		go convertToMp4Async(dstPath)
+
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprintf(w, `{"status":"ok","path":"%s","size":%d}`, filepath.ToSlash(relPath), written)
+	}
+}
+
+func convertToMp4Async(h264Path string) {
+	time.Sleep(50 * time.Millisecond)
+
+	mp4Path := strings.TrimSuffix(h264Path, filepath.Ext(h264Path)) + ".mp4"
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	//Remuxing with ffmpeg
+	cmd := exec.CommandContext(ctx, "ffmpeg", "-y", "-i", h264Path, "-c", "copy", mp4Path)
+
+	if err := cmd.Run(); err != nil {
+		log.Printf("FFmpeg error for %s: %v", filepath.Base(h264Path), err)
+		return
+	}
+
+	log.Printf("Successfully indexed and remuxed to MP4: %s", filepath.Base(mp4Path))
+
+	//Remove the remaining h264 file
+	if err := os.Remove(h264Path); err != nil {
+		log.Printf("Failed to remove raw h264 file %s: %v", h264Path, err)
 	}
 }
 
