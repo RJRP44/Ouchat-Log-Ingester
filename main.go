@@ -46,6 +46,7 @@ func main() {
 
 	//Start the http server for videos
 	http.HandleFunc("/upload", uploadHandler(db))
+	http.HandleFunc("/videos/", downloadHandler())
 	go func() {
 		err := http.ListenAndServe(":8080", nil)
 		if err != nil {

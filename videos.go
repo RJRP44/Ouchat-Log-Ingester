@@ -150,3 +150,73 @@ func buildDestPath(filename string) (path string, id string, t time.Time, err er
 
 	return filepath.Join(dir, finalName), id, t, nil
 }
+
+func downloadHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		rel := strings.TrimPrefix(r.URL.Path, "/videos/")
+		if rel == "" || rel == r.URL.Path {
+			http.NotFound(w, r)
+			return
+		}
+
+		rel = filepath.Clean(rel)
+		if rel == "." || strings.HasPrefix(rel, "..") || strings.Contains(rel, ".."+string(filepath.Separator)) {
+			http.Error(w, "Invalid path", http.StatusBadRequest)
+			return
+		}
+
+		fullPath := filepath.Join(uploadDir, rel)
+
+		absUploadDir, err := filepath.Abs(uploadDir)
+		if err != nil {
+			http.Error(w, "Server error", http.StatusInternalServerError)
+			return
+		}
+		absFullPath, err := filepath.Abs(fullPath)
+		if err != nil || !strings.HasPrefix(absFullPath, absUploadDir+string(filepath.Separator)) {
+			http.Error(w, "Invalid path", http.StatusBadRequest)
+			return
+		}
+
+		info, err := os.Stat(fullPath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				http.NotFound(w, r)
+				return
+			}
+			http.Error(w, "Server error", http.StatusInternalServerError)
+			return
+		}
+
+		if info.IsDir() {
+			http.NotFound(w, r)
+			return
+		}
+
+		ext := strings.ToLower(filepath.Ext(fullPath))
+		if ext != ".mp4" {
+			http.Error(w, "Unsupported file type", http.StatusForbidden)
+			return
+		}
+
+		f, err := os.Open(fullPath)
+		if err != nil {
+			http.Error(w, "Server error", http.StatusInternalServerError)
+			return
+		}
+		defer func(f *os.File) {
+			err := f.Close()
+			if err != nil {
+
+			}
+		}(f)
+
+		w.Header().Set("Content-Disposition", `inline; filename="`+filepath.Base(fullPath)+`"`)
+		http.ServeContent(w, r, fullPath, info.ModTime(), f)
+	}
+}
