@@ -11,7 +11,6 @@ import (
 )
 
 // timestampLayout matches the timestamp format used by postgres
-const timestampLayout = "2006-01-02 15:04:05"
 const electronicsTimestampLayout = "2006-01-02_15-04-05"
 
 // connState holds the session context currently active on a connection.
@@ -79,7 +78,7 @@ func handleInit(env *Packet, state *connState, db *Database) error {
 	if content.Timestamp == "nocam" {
 		loc, _ := time.LoadLocation("Europe/Paris")
 		currentTime := time.Now().In(loc)
-		content.Timestamp = currentTime.Format(timestampLayout)
+		content.Timestamp = currentTime.Format(electronicsTimestampLayout)
 	}
 
 	ts, err := time.Parse(electronicsTimestampLayout, content.Timestamp)
